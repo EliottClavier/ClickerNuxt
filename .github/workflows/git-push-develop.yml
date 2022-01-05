@@ -1,4 +1,4 @@
-name: Actions réaliser lors d'un push sur la branche develop
+name: Actions réalisées lors d'un push sur la branche develop
 'on':
   push:
     branches:
