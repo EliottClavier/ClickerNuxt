@@ -10,6 +10,7 @@
         </v-row>
       </v-col>
     </v-row>
+    <v-btn :disabled="loading" @click="connexion">{{connected ? "Deconnexion" : "Connexion"}}</v-btn>
   </v-container>
 </template>
 
@@ -17,7 +18,9 @@
 export default {
   name: 'index',
   data: () => ({
-    incValue: 0
+    incValue: 0,
+    connected: false,
+    loading: false,
   }),
   methods: {
 
@@ -39,6 +42,22 @@ export default {
       let doc = document.getElementById("moving-button");
       doc.style.transform = `translateX(${this.random()}vw) translateY(${this.random()}vh)`;
     },
+
+    async connexion(){
+      if(this.connected){
+        this.loading = true;
+        this.$fireModule.auth().signOut().then((result) => {
+          this.connected = false;
+          this.loading = false;
+        })
+      }else{
+        this.loading = true;
+        this.$fireModule.auth().signInAnonymously().then((result) => {
+          this.connected = true;
+          this.loading = false;
+        });
+      }
+    }
   },
 
   async mounted() {
