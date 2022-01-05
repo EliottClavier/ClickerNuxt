@@ -1,4 +1,7 @@
 import colors from 'vuetify/es5/util/colors'
+const dotenv = require('dotenv')
+let path = ".env"
+dotenv.config({path})
 
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
@@ -41,11 +44,32 @@ export default {
   buildModules: [
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
+    "@nuxtjs/dotenv"
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+    "@nuxtjs/firebase"
   ],
+
+  firebase: {
+    config: {
+      apiKey: process.env.apiKey,
+      authDomain: process.env.authDomain,
+      projectId: process.env.projectId,
+      storageBucket: process.env.storageBucket,
+      messagingSenderId: process.env.messagingSenderId,
+      appId: process.env.appId
+    },
+    services: {
+      auth: true,
+      firestore: {
+        memoryOnly: false,
+        enablePersistence: true,
+        emulatorPort: undefined,
+      },
+    }
+  },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
