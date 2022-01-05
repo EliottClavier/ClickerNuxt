@@ -3,8 +3,22 @@ Utilisation de Firebase Hosting et GitHub Actions sur un projet NuxtJS par défa
 
 Commandes utilisées:
 
-firebase init, pour initialiser le hosting de firebase
-firebase deploy, pour tester le déploiement
+```console
+firebase init
+```
+... pour initialiser le hosting de firebase
 
-npm run ci && npm run build, qui build l'application
-npm run test, qui redirige vers jest
+```console
+firebase deploy
+```
+... pour tester le déploiement
+
+```console
+npm run ci && npm run build
+```
+... qui build l'application
+
+```console
+npm run test
+```
+... qui redirige vers le testing jest
