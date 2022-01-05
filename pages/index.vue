@@ -3,7 +3,7 @@
     <v-row class="justify-center align-center">
       <v-col cols="10">
         <v-row class="justify-center">
-          <v-btn @click="updateInc">Increment</v-btn>
+          <v-btn id="moving-button" @click="updateInc">Increment</v-btn>
         </v-row>
         <v-row class="justify-center">
           <h1 style="font-size: 6em">{{ incValue }} clicks</h1>
@@ -20,6 +20,13 @@ export default {
     incValue: 0
   }),
   methods: {
+
+    random() {
+      let num = Math.floor(Math.random() * 40);
+      num *= Math.round(Math.random()) ? 1 : -1;
+      return num;
+    },
+
     async getSnapshotInc(){
       const ref = await this.$fire.firestore.collection("increment").doc("incrementdoc")
       await ref.onSnapshot((querySnap) => querySnap.data() && (this.incValue = querySnap.data().inc));
@@ -28,6 +35,9 @@ export default {
     async updateInc() {
       this.incValue += 1;
       await this.$fire.firestore.collection("increment").doc("incrementdoc").set({"inc": this.incValue})
+
+      let doc = document.getElementById("moving-button");
+      doc.style.transform = `translateX(${this.random()}vw) translateY(${this.random()}vh)`;
     },
   },
 
