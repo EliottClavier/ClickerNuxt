@@ -1,6 +1,15 @@
 <template>
-  <v-container>
-    <v-btn @click="updateInc">Increment</v-btn>
+  <v-container class="d-flex" style="min-height: 100%">
+    <v-row class="justify-center align-center">
+      <v-col cols="10">
+        <v-row class="justify-center">
+          <v-btn @click="updateInc">Increment</v-btn>
+        </v-row>
+        <v-row class="justify-center">
+          <h1 style="font-size: 6em">{{ incValue }} clicks</h1>
+        </v-row>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
