@@ -3,7 +3,7 @@
     <v-row class="justify-center align-center">
       <v-col cols="10">
         <v-row class="justify-center">
-          <v-btn id="moving-button" @click="updateInc">Increment</v-btn>
+          <v-btn style="height: 5em; width: 5em" id="moving-button" @click="updateInc"><h1>+</h1></v-btn>
         </v-row>
         <v-row class="justify-center">
           <h1 style="font-size: 6em">{{ incValue }} clicks</h1>
@@ -21,13 +21,67 @@ export default {
     incValue: 0,
     connected: false,
     loading: false,
+    interval: null,
+    currentTranslateX: 0,
+    currentTranslateY: 0,
   }),
   methods: {
 
-    random() {
-      let num = Math.floor(Math.random() * 40);
+    random(maxIntervalValue) {
+      let num = Math.floor(Math.random() * maxIntervalValue);
       num *= Math.round(Math.random()) ? 1 : -1;
       return num;
+    },
+
+    randomNoFloor(maxIntervalValue) {
+      let num = Math.random() * maxIntervalValue;
+      num *= Math.round(Math.random()) ? 1 : -1;
+      return num;
+    },
+
+    randomBool() {
+      return Math.round(Math.random());
+    },
+
+    randomInterval(min, max) {
+      return Math.floor(Math.random() * (max - min) + min)
+    },
+
+    checkBoundaries() {
+      this.currentTranslateX > 100 && (this.currentTranslateX = 95);
+      this.currentTranslateY > 100 && (this.currentTranslateY = 95);
+    },
+
+    initializeButton() {
+      this.interval = setInterval(() => {
+        if (this.randomBool()) {
+          let doc = document.getElementById("moving-button");
+          this.currentTranslateX += this.randomNoFloor(2);
+          this.currentTranslateY += this.randomNoFloor(2);
+          this.checkBoundaries();
+          doc.style.transition = "ease-in transform 0.1s";
+          doc.style.transform = `translateX(${this.currentTranslateX}vw) translateY(${this.currentTranslateY}vh)`;
+        }
+      }, 300)
+    },
+
+    moveButton() {
+      let bool = this.randomBool();
+      let doc = document.getElementById("moving-button");
+      if (bool) {
+        doc.style.transition = "ease-in opacity";
+        doc.style.opacity = "0"
+      }
+      setTimeout(() => {
+        doc.style.transition = "ease-in transform 0.1s";
+        this.currentTranslateX = this.random(40);
+        this.currentTranslateY = this.random(35)
+        doc.style.transform = `translateX(${this.currentTranslateX}vw) translateY(${this.currentTranslateY}vh)`;
+        if (bool) {
+          doc.style.transition = "ease-in opacity";
+          doc.style.opacity = "1"
+        }
+      }, 1)
     },
 
     async getSnapshotInc(){
@@ -38,9 +92,8 @@ export default {
     async updateInc() {
       this.incValue += 1;
       await this.$fire.firestore.collection("increment").doc("incrementdoc").set({"inc": this.incValue})
-
-      let doc = document.getElementById("moving-button");
-      doc.style.transform = `translateX(${this.random()}vw) translateY(${this.random()}vh)`;
+      await this.getSnapshotInc();
+      this.moveButton();
     },
 
     async connexion(){
@@ -62,7 +115,15 @@ export default {
 
   async mounted() {
     await this.getSnapshotInc();
+    this.initializeButton();
+  },
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 
 }
 </script>
+
+<style scoped>
+</style>
