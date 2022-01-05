@@ -1,0 +1,16 @@
+name: Actions réaliser lors d'un push sur la branche develop
+'on':
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: 'develop'
+      - run: npm ci && npm run build && npm run test
