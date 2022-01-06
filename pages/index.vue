@@ -1,12 +1,12 @@
 <template>
-  <v-container class="d-flex" style="min-height: 100%">
+  <v-container class="d-flex container">
     <v-row class="justify-center align-center">
       <v-col cols="10">
         <v-row class="justify-center">
-          <v-btn style="height: 5em; width: 5em" id="moving-button" @click="updateInc"><h1>+</h1></v-btn>
+          <v-btn class="button" id="moving-button" @click="updateInc"><h1>+</h1></v-btn>
         </v-row>
         <v-row class="justify-center">
-          <h1 style="font-size: 6em">{{ incValue }} clicks</h1>
+          <h1 class="title">{{ incValue }} clicks</h1>
         </v-row>
       </v-col>
     </v-row>
@@ -114,8 +114,11 @@ export default {
   },
 
   async mounted() {
-    await this.getSnapshotInc();
-    this.initializeButton();
+    this.$fire.auth.onAuthStateChanged(async () => {
+      this.$fire.auth.currentUser && (this.connected = true);
+      await this.getSnapshotInc();
+      this.initializeButton();
+    });
   },
 
   destroyed() {
@@ -126,4 +129,14 @@ export default {
 </script>
 
 <style scoped>
+.title {
+  font-size: 6em;
+}
+.button {
+  height: 5em;
+  width: 5em;
+}
+.container {
+  min-height: 100%;
+}
 </style>
