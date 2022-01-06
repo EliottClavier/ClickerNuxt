@@ -21,13 +21,30 @@
       </v-progress-linear>
       <v-col cols="12">
         <v-row class="justify-center">
-          <v-btn id="moving-button" @click="updateInc"><h1>+</h1></v-btn>
+          <v-btn id="moving-button" @click="updateInc" rounded><h1>{{ objValue - incValue }}</h1></v-btn>
         </v-row>
         <v-row class="justify-center">
           <h1 class="custom-title">{{ incValue }} clicks</h1>
         </v-row>
       </v-col>
-      <v-btn :disabled="loading" @click="connexion" style="position: absolute; top: 1em; right: 1.5em">{{connected ? "Deconnexion" : "Connexion"}}</v-btn>
+      <div id="leaderboard" class="d-flex align-center custom-text">
+        <ul class="m-0 pl-5 pr-5">
+          <li class="mb-3">
+            <span v-if="connected">Votre score : {{ score }}</span>
+            <span v-else> Connexion requise pour scorer !</span>
+          </li>
+          <li class="d-flex align-center" v-for="(item, idx) in leaderboard" :key="item.pseudo + item.score" :style="{color: `${ id === item.id && ('#ffc107') }`}">
+            <img v-if="idx === 0" class="mr-2" style="height: 1em" src="https://img.icons8.com/color-glass/48/000000/crown.png"/>
+            {{ item.pseudo }} - {{ item.score }}
+          </li>
+        </ul>
+      </div>
+      <div id="connexion-section" class="d-flex align-center">
+        <v-text-field v-if="!connected" outlined placeholder="Pseudonyme" v-model="pseudo" class="mr-2"
+            :append-icon="pseudo ? 'mdi-play' : undefined" v-on:keyup.enter="connexion" @click:append="connexion" maxlength="12">
+        </v-text-field>
+        <v-btn v-else :disabled="loading" @click="connexion" outlined>Deconnexion</v-btn>
+      </div>
     </v-row>
   </v-container>
 </template>
@@ -40,6 +57,10 @@ export default {
     objValue: 0,
     lastValue: 0,
     value: 0,
+    id: "",
+    pseudo: "",
+    score: 0,
+    leaderboard: [],
     loadData: false,
     connected: false,
     loading: false,
@@ -70,7 +91,9 @@ export default {
     },
 
     checkBoundaries() {
+      this.currentTranslateX < -100 && (this.currentTranslateX = 5);
       this.currentTranslateX > 100 && (this.currentTranslateX = 95);
+      this.currentTranslateY < -100 && (this.currentTranslateY = 5);
       this.currentTranslateY > 100 && (this.currentTranslateY = 95);
     },
 
@@ -115,12 +138,39 @@ export default {
           this.objValue = data.obj;
           this.lastValue = data.last;
         });
-        this.getValue();
+        await this.getValue();
+      });
+    },
+
+    async getUserScore() {
+      const ref = await this.$fire.firestore.collection("users").doc(localStorage.getItem("userID"));
+      if (ref) {
+        const snapshot = await ref.get();
+        const doc = snapshot.data();
+        this.score = doc.score;
+      }
+    },
+
+    async getLeaderboard() {
+      const ref = await this.$fire.firestore.collection("users").orderBy("score", "desc").limit(5);
+      await ref.onSnapshot(async (querySnap) => {
+        let tempArray = [];
+        await querySnap.forEach((doc) => {
+          let tempDoc = doc.data();
+          tempDoc.id = doc.id;
+          tempArray.push(tempDoc);
+        });
+        this.leaderboard = tempArray;
+        await this.getValue();
       });
     },
 
     async updateInc() {
+      // Pas de controle avec this.connected pour laisser les rules Firebase fonctionner
       this.incValue += 1;
+      if (this.connected) {
+        this.score += 1;
+      }
       let doc = {
         inc: this.incValue,
       };
@@ -129,7 +179,10 @@ export default {
         doc.obj = this.objValue+rand;
         doc.last = this.objValue;
       }
+      this.goldeningButton();
+      console.log("call")
       await this.$fire.firestore.collection("increment").doc("incrementdoc").update(doc).then(async () => {
+        this.connected && (await this.$fire.firestore.collection("users").doc(localStorage.getItem("userID")).update({"score": this.score}));
         await this.getValue();
         await this.getSnapshotInc();
         this.moveButton();
@@ -137,20 +190,36 @@ export default {
     },
 
     async getValue(){
-      let val = 100-Math.round(((this.objValue-this.incValue)/(this.objValue-this.lastValue))*100);
-      this.value = val;
+      this.value = 100-Math.round(((this.objValue-this.incValue)/(this.objValue-this.lastValue))*100);
+    },
+
+    goldeningButton() {
+      let doc = document.getElementById("moving-button");
+      doc.style.background = this.objValue - 1 === this.incValue ? '#ffc107' : '';
     },
 
     async connexion(){
       if(this.connected){
         this.loading = true;
-        this.$fireModule.auth().signOut().then((result) => {
+        this.$fireModule.auth().signOut().then(() => {
+          localStorage.setItem("userID", "");
+          localStorage.setItem("userPseudo", "");
+          this.id = "";
+          this.score = 0;
           this.connected = false;
           this.loading = false;
         })
-      }else{
+      } else if (this.pseudo) {
         this.loading = true;
-        this.$fireModule.auth().signInAnonymously().then((result) => {
+        this.$fireModule.auth().signInAnonymously().then(async () => {
+          let ref = this.$fire.firestore.collection("users").doc();
+          localStorage.setItem('userID', ref.id);
+          localStorage.setItem('userPseudo', this.pseudo);
+          await ref.set({
+            pseudo: this.pseudo,
+            score: 0
+          });
+          this.id = ref.id;
           this.connected = true;
           this.loading = false;
         });
@@ -159,19 +228,25 @@ export default {
   },
 
   async mounted() {
+    await this.getLeaderboard();
+    this.initializeButton();
     this.$fire.auth.onAuthStateChanged(async () => {
-      this.$fire.auth.currentUser && (this.connected = true);
+      if (this.$fire.auth.currentUser) {
+        this.id = localStorage.getItem("userID");
+        this.pseudo = localStorage.getItem("userPseudo")
+        console.log(localStorage)
+        await this.getUserScore().then(() => this.connected = true);
+      }
       this.loadData = true;
       await this.getSnapshotInc().then(() => {
         this.getValue();
-        this.initializeButton();
         this.loadData = false;
       });
     });
   },
 
   destroyed() {
-    clearInterval(this.randomMoves);
+    this.randomMoves && (clearInterval(this.randomMoves));
   }
 
 }
@@ -185,12 +260,30 @@ export default {
   font-size: 2.5em;
   font-weight: bold;
 }
+.custom-text {
+  font-size: 1.2em;
+  font-weight: bold;
+}
 #moving-button {
   height: 5em;
   width: 5em;
   z-index: 10;
 }
+#leaderboard {
+  position: absolute;
+  top: 1em;
+  left: 1.5em;
+  flex-direction: column;
+}
+#connexion-section {
+  position: absolute;
+  top: 1em;
+  right: 1.5em;
+}
 .custom-container {
   min-height: 100%;
+}
+ul {
+  list-style-type: none;
 }
 </style>
