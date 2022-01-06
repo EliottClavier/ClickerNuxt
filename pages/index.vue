@@ -1,6 +1,15 @@
 <template>
-  <v-container class="d-flex" style="min-height: 100%">
-    <v-row class="justify-center align-center">
+  <v-container v-else class="d-flex" style="min-height: 100%">
+    <div v-if="loadData"
+         class="d-flex justify-center" style="margin-top: 40vh; transform: translateY(-50%);" >
+      <v-progress-circular
+        indeterminate
+        color="#ede3e8"
+        :size="200"
+        :width="10"
+      ></v-progress-circular>
+    </div>
+    <v-row v-else class="justify-center align-center">
       <v-col cols="4">
         <v-row class="justify-center">
           <v-progress-linear
@@ -9,7 +18,7 @@
             v-model="value"
             style="transform: rotate(-90deg)"
           >
-          <div style="transform: rotate(90deg)">{{incValue}} / {{objValue}}</div>
+            <div style="transform: rotate(90deg)">{{incValue}} / {{objValue}}</div>
           </v-progress-linear>
         </v-row>
       </v-col>
@@ -34,6 +43,7 @@ export default {
     objValue: 0,
     lastValue: 0,
     value: 0,
+    loadData: false,
     connected: false,
     loading: false,
   }),
@@ -89,9 +99,11 @@ export default {
   },
 
   async mounted() {
+    this.loadData = true;
     await this.getSnapshotInc().then(() => {
       this.getValue();
     });
+    this.loadData = false;
   }
 
 }
