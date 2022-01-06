@@ -1,12 +1,12 @@
 <template>
-  <v-container class="d-flex container">
+  <v-container class="d-flex custom-container">
     <v-row class="justify-center align-center">
       <v-col cols="10">
         <v-row class="justify-center">
-          <v-btn class="button" id="moving-button" @click="updateInc"><h1>+</h1></v-btn>
+          <v-btn id="moving-button" @click="updateInc"><h1>+</h1></v-btn>
         </v-row>
         <v-row class="justify-center">
-          <h1 class="title">{{ incValue }} clicks</h1>
+          <h1 class="custom-title">{{ incValue }} clicks</h1>
         </v-row>
       </v-col>
     </v-row>
@@ -73,7 +73,7 @@ export default {
         doc.style.opacity = "0"
       }
       setTimeout(() => {
-        doc.style.transition = "ease-in transform";
+        doc.style.transition = "ease-in transform 0.1s";
         this.currentTranslateX = this.random(40);
         this.currentTranslateY = this.random(35);
         doc.style.transform = `translateX(${this.currentTranslateX}vw) translateY(${this.currentTranslateY}vh)`;
@@ -128,15 +128,15 @@ export default {
 }
 </script>
 
-<style scoped>
-.title {
+<style type="text/css" scoped>
+.custom-title {
   font-size: 6em;
 }
-.button {
+#moving-button {
   height: 5em;
   width: 5em;
 }
-.container {
+.custom-container {
   min-height: 100%;
 }
 </style>
