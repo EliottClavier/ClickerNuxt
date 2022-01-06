@@ -1,4 +1,4 @@
-<template>
+<template style="overflow: hidden">
   <v-app dark>
     <v-main>
         <Nuxt />
