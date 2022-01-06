@@ -1,19 +1,17 @@
 <template>
   <v-container class="d-flex custom-container">
+    <v-progress-linear
+      absolute
+      bottom
+      left
+      color="black"
+      height="70"
+      :value="value"
+    >
+      <div class="custom-subtitle">{{incValue}} / {{objValue}}</div>
+    </v-progress-linear>
     <v-row class="justify-center align-center">
-      <v-col cols="4">
-        <v-row class="justify-center">
-          <v-progress-linear
-            color="amber"
-            height="150"
-            v-model="value"
-            style="transform: rotate(-90deg)"
-          >
-          <div style="transform: rotate(90deg)">{{incValue}} / {{objValue}}</div>
-          </v-progress-linear>
-        </v-row>
-      </v-col>
-      <v-col cols="8">
+      <v-col cols="12">
         <v-row class="justify-center">
           <v-btn id="moving-button" @click="updateInc"><h1>+</h1></v-btn>
         </v-row>
@@ -22,7 +20,7 @@
         </v-row>
       </v-col>
     </v-row>
-    <v-btn :disabled="loading" @click="connexion">{{connected ? "Deconnexion" : "Connexion"}}</v-btn>
+    <v-btn :disabled="loading" @click="connexion" style="position: absolute; top: 1em; right: 1.5em">{{connected ? "Deconnexion" : "Connexion"}}</v-btn>
   </v-container>
 </template>
 
@@ -172,9 +170,14 @@ export default {
 .custom-title {
   font-size: 6em;
 }
+.custom-subtitle {
+  font-size: 2.5em;
+  font-weight: bold;
+}
 #moving-button {
   height: 5em;
   width: 5em;
+  z-index: 10;
 }
 .custom-container {
   min-height: 100%;
