@@ -1,5 +1,10 @@
 <template>
   <v-container class="d-flex custom-container">
+    <Animation class="animation" style="opacity: 0;" />
+    <Animation class="animation" style="opacity: 0;" />
+    <Animation class="animation" style="opacity: 0;" />
+    <Animation class="animation" style="opacity: 0;" />
+    <Animation class="animation" style="opacity: 0;" />
     <v-row v-if="loadData" class="d-flex justify-center align-center">
       <v-progress-circular class="justify-center align-center"
         indeterminate
@@ -118,6 +123,19 @@ export default {
         this.getValue();
       });
     },
+    async animate() {
+      let animations = document.getElementsByClassName("animation");
+      Array.from(animations).forEach((a, index) => {
+        this.sleep(200*index).then(() => {
+          a.style.opacity = 1;
+        });
+      });
+      Array.from(animations).forEach((a, index) => {
+        this.sleep(500*index).then(() => {
+          a.style.opacity = 0;
+        });
+      });
+    },
 
     async updateInc() {
       this.incValue += 1;
@@ -128,6 +146,7 @@ export default {
         let rand = Math.round(Math.random()*(200-10)+10);
         doc.obj = this.objValue+rand;
         doc.last = this.objValue;
+        this.animate();
       }
       await this.$fire.firestore.collection("increment").doc("incrementdoc").update(doc).then(async () => {
         await this.getValue();
@@ -135,6 +154,10 @@ export default {
         this.moveButton();
       })
     },
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    },
+
 
     async getValue(){
       let val = 100-Math.round(((this.objValue-this.incValue)/(this.objValue-this.lastValue))*100);
