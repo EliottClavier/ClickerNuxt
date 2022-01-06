@@ -21,7 +21,7 @@ export default {
     incValue: 0,
     connected: false,
     loading: false,
-    interval: null,
+    randomMoves: null,
     currentTranslateX: 0,
     currentTranslateY: 0,
   }),
@@ -53,7 +53,7 @@ export default {
     },
 
     initializeButton() {
-      this.interval = setInterval(() => {
+      this.randomMoves = setInterval(() => {
         if (this.randomBool()) {
           let doc = document.getElementById("moving-button");
           this.currentTranslateX += this.randomNoFloor(2);
@@ -62,7 +62,7 @@ export default {
           doc.style.transition = "ease-in transform 0.1s";
           doc.style.transform = `translateX(${this.currentTranslateX}vw) translateY(${this.currentTranslateY}vh)`;
         }
-      }, 300)
+      }, 300);
     },
 
     moveButton() {
@@ -73,15 +73,15 @@ export default {
         doc.style.opacity = "0"
       }
       setTimeout(() => {
-        doc.style.transition = "ease-in transform 0.1s";
+        doc.style.transition = "ease-in transform";
         this.currentTranslateX = this.random(40);
-        this.currentTranslateY = this.random(35)
+        this.currentTranslateY = this.random(35);
         doc.style.transform = `translateX(${this.currentTranslateX}vw) translateY(${this.currentTranslateY}vh)`;
         if (bool) {
           doc.style.transition = "ease-in opacity";
-          doc.style.opacity = "1"
+          doc.style.opacity = "1";
         }
-      }, 1)
+      }, 1000)
     },
 
     async getSnapshotInc(){
@@ -119,7 +119,7 @@ export default {
   },
 
   destroyed() {
-    clearInterval(this.interval);
+    clearInterval(this.randomMoves);
   }
 
 }
