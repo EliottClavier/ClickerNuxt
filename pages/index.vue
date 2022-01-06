@@ -1,7 +1,19 @@
 <template>
   <v-container class="d-flex" style="min-height: 100%">
     <v-row class="justify-center align-center">
-      <v-col cols="10">
+      <v-col cols="4">
+        <v-row class="justify-center">
+          <v-progress-linear
+            color="amber"
+            height="150"
+            v-model="value"
+            style="transform: rotate(-90deg)"
+          >
+          <div style="transform: rotate(90deg)">{{incValue}} / {{objValue}}</div>
+          </v-progress-linear>
+        </v-row>
+      </v-col>
+      <v-col cols="8">
         <v-row class="justify-center">
           <v-btn @click="updateInc">Increment</v-btn>
         </v-row>
@@ -19,18 +31,44 @@ export default {
   name: 'index',
   data: () => ({
     incValue: 0,
+    objValue: 0,
+    lastValue: 0,
+    value: 0,
     connected: false,
     loading: false,
   }),
   methods: {
     async getSnapshotInc(){
-      const ref = await this.$fire.firestore.collection("increment").doc("incrementdoc")
-      await ref.onSnapshot((querySnap) => querySnap.data() && (this.incValue = querySnap.data().inc));
+      const ref = await this.$fire.firestore.collection("increment");
+      await ref.onSnapshot(async (querySnap) => {
+        await querySnap.forEach((doc) => {
+          let data = doc.data();
+          this.incValue = data.inc;
+          this.objValue = data.obj;
+          this.lastValue = data.last;
+        });
+        this.getValue();
+      });
     },
 
     async updateInc() {
       this.incValue += 1;
-      await this.$fire.firestore.collection("increment").doc("incrementdoc").set({"inc": this.incValue})
+      let doc = {
+        inc: this.incValue,
+      };
+      if(this.incValue >= this.objValue){
+        let rand = Math.round(Math.random()*(200-10)+10);
+        doc.obj = this.objValue+rand;
+        doc.last = this.objValue;
+      }
+      await this.$fire.firestore.collection("increment").doc("incrementdoc").update(doc).then(() => {
+        this.getValue();
+      })
+    },
+
+    async getValue(){
+      let val = 100-Math.round(((this.objValue-this.incValue)/(this.objValue-this.lastValue))*100);
+      this.value = val;
     },
 
     async connexion(){
@@ -51,7 +89,9 @@ export default {
   },
 
   async mounted() {
-    await this.getSnapshotInc();
+    await this.getSnapshotInc().then(() => {
+      this.getValue();
+    });
   }
 
 }
