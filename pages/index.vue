@@ -81,7 +81,7 @@ export default {
           doc.style.transition = "ease-in opacity";
           doc.style.opacity = "1";
         }
-      }, 1000)
+      }, 1)
     },
 
     async getSnapshotInc(){
