@@ -26,7 +26,7 @@
       </v-progress-linear>
       <v-col cols="12">
         <v-row class="justify-center">
-          <v-btn id="moving-button" @click="updateInc" rounded><h1>{{ objValue - incValue }}</h1></v-btn>
+          <v-btn id="moving-button" @click="updateInc" rounded color="red"><h1>{{ objValue - incValue }}</h1></v-btn>
         </v-row>
         <v-row class="justify-center">
           <h1 class="custom-title">{{ incValue }} clicks</h1>
