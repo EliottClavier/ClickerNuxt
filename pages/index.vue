@@ -1,16 +1,24 @@
 <template>
   <v-container class="d-flex custom-container">
-    <v-progress-linear
-      absolute
-      bottom
-      left
-      color="black"
-      height="70"
-      :value="value"
-    >
-      <div class="custom-subtitle">{{incValue}} / {{objValue}}</div>
-    </v-progress-linear>
-    <v-row class="justify-center align-center">
+    <v-row v-if="loadData" class="d-flex justify-center align-center">
+      <v-progress-circular class="justify-center align-center"
+        indeterminate
+        color="#ede3e8"
+        :size="200"
+        :width="10"
+      ></v-progress-circular>
+    </v-row>
+    <v-row v-else class="justify-center align-center">
+      <v-progress-linear
+        absolute
+        bottom
+        left
+        color="black"
+        height="70"
+        :value="value"
+      >
+        <div class="custom-subtitle">{{incValue}} / {{objValue}}</div>
+      </v-progress-linear>
       <v-col cols="12">
         <v-row class="justify-center">
           <v-btn id="moving-button" @click="updateInc"><h1>+</h1></v-btn>
@@ -19,8 +27,8 @@
           <h1 class="custom-title">{{ incValue }} clicks</h1>
         </v-row>
       </v-col>
+      <v-btn :disabled="loading" @click="connexion" style="position: absolute; top: 1em; right: 1.5em">{{connected ? "Deconnexion" : "Connexion"}}</v-btn>
     </v-row>
-    <v-btn :disabled="loading" @click="connexion" style="position: absolute; top: 1em; right: 1.5em">{{connected ? "Deconnexion" : "Connexion"}}</v-btn>
   </v-container>
 </template>
 
@@ -32,6 +40,7 @@ export default {
     objValue: 0,
     lastValue: 0,
     value: 0,
+    loadData: false,
     connected: false,
     loading: false,
     randomMoves: null,
@@ -152,10 +161,12 @@ export default {
   async mounted() {
     this.$fire.auth.onAuthStateChanged(async () => {
       this.$fire.auth.currentUser && (this.connected = true);
+      this.loadData = true;
       await this.getSnapshotInc().then(() => {
         this.getValue();
+        this.initializeButton();
+        this.loadData = false;
       });
-      this.initializeButton();
     });
   },
 
