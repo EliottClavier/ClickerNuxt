@@ -199,7 +199,6 @@ export default {
         this.animate();
       }
       this.goldeningButton();
-      console.log("call")
       await this.$fire.firestore.collection("increment").doc("incrementdoc").update(doc).then(async () => {
         this.connected && (await this.$fire.firestore.collection("users").doc(localStorage.getItem("userID")).update({"score": this.score}));
         await this.getValue();
